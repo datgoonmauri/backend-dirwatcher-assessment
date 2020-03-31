@@ -60,7 +60,14 @@ def watch_directory(args):
         find_magic(file, args.magic, directory)
 
 
-def signal_handler(sig_num, frame):
+def handle_signal(sig_num, frame):
+    """
+    This is a handler for SIGTERM and SIGINT. Other signals can be mapped here as well (SIGHUP?)
+    Basically it just sets a global flag, and main() will exit it's loop if the signal is trapped.
+    :param sig_num: The integer signal number that was trapped from the OS.
+    :param frame: Not used
+    :return None
+    """
     global exit_flag
     signames = dict((k, v) for v, k in reversed(sorted(signal.__dict__.items()))
         if v.startswith('SIG') and not v.startswith('SIG_'))
@@ -72,8 +79,9 @@ def signal_handler(sig_num, frame):
 
 
 def main():
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.signal(signal.SIGTERM, signal_handler)
+    # Hook these two signals from the OS ..
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
     logging.basicConfig(
         format='%(asctime)s.%(msecs)03d %(name)-12s %(levelname)-8s'
         '[%(threadName)-12s] %(message)s',
